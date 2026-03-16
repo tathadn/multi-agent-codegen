@@ -36,14 +36,32 @@ CIRCLE = {
 }
 
 
-def render_sidebar() -> tuple[int, dict, dict]:
-    """Render sidebar and return (max_iterations, placeholders, indicator_states)."""
+TESTER_MODELS = {
+    "Fast — Haiku (simple projects)":    "claude-haiku-4-5-20251001",
+    "Standard — Sonnet (most projects)": "claude-sonnet-4-6",
+    "Thorough — Opus (complex projects)": "claude-opus-4-6",
+}
+
+
+def render_sidebar() -> tuple[int, str, dict, dict]:
+    """Render sidebar and return (max_iterations, tester_model, placeholders, indicator_states)."""
     placeholders: dict = {}
     indicator_states: dict = {key: "waiting" for key in PIPELINE_ORDER}
 
     with st.sidebar:
         st.header("Settings")
         max_iterations = st.slider("Max revision iterations", min_value=1, max_value=5, value=3)
+
+        st.markdown("**Tester agent model**")
+        tester_choice = st.radio(
+            label="tester_model",
+            options=list(TESTER_MODELS.keys()),
+            index=1,
+            label_visibility="collapsed",
+            help="Haiku is fastest but may miss edge cases. Opus is most thorough but slower and costlier.",
+        )
+        tester_model = TESTER_MODELS[tester_choice]
+
         st.divider()
         st.markdown("**Pipeline Status**")
         for key in PIPELINE_ORDER:
@@ -55,7 +73,7 @@ def render_sidebar() -> tuple[int, dict, dict]:
             with label_col:
                 st.markdown(f"{emoji} {label}")
 
-    return max_iterations, placeholders, indicator_states
+    return max_iterations, tester_model, placeholders, indicator_states
 
 
 def set_indicator(placeholders: dict, indicator_states: dict, agent: str, state: str) -> None:
@@ -66,10 +84,13 @@ def set_indicator(placeholders: dict, indicator_states: dict, agent: str, state:
 def run_with_streaming(
     request: str,
     max_iterations: int,
+    tester_model: str,
     placeholders: dict,
     indicator_states: dict,
 ) -> AgentState:
     """Run the graph with app.stream() and update sidebar indicators in real time."""
+    os.environ["TESTER_MODEL"] = tester_model
+
     graph = build_graph()
     recursion_limit = int(os.getenv("LANGGRAPH_RECURSION_LIMIT", "50"))
 
@@ -205,7 +226,7 @@ def render_results(state: AgentState) -> None:
 
 
 def main() -> None:
-    max_iterations, placeholders, indicator_states = render_sidebar()
+    max_iterations, tester_model, placeholders, indicator_states = render_sidebar()
 
     request = st.text_area(
         "Describe what you want to build",
@@ -219,7 +240,7 @@ def main() -> None:
             return
 
         try:
-            state = run_with_streaming(request.strip(), max_iterations, placeholders, indicator_states)
+            state = run_with_streaming(request.strip(), max_iterations, tester_model, placeholders, indicator_states)
             render_results(state)
         except Exception as e:
             st.error(f"Pipeline error: {e}")

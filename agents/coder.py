@@ -36,8 +36,12 @@ def _build_prompt(state: AgentState) -> str:
         parts.append(f"\nReview issues to fix:\n{issues}")
 
     if state.test_result and not state.test_result.passed:
-        errors = "\n".join(f"- {e}" for e in state.test_result.errors)
-        parts.append(f"\nTest failures to fix:\n{errors}")
+        parts.append("\nTest execution errors to fix (real sandbox output):")
+        if state.test_result.errors:
+            for err in state.test_result.errors:
+                parts.append(err)
+        if state.test_result.output:
+            parts.append(f"\nFull pytest output:\n{state.test_result.output}")
 
     if state.artifacts:
         parts.append("\nExisting code to revise:")
