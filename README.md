@@ -2,6 +2,14 @@
 
 > Describe what you want to build — a pipeline of AI agents plans, writes, reviews, and tests the code for you.
 
+Built with [LangGraph](https://github.com/langchain-ai/langgraph) and Claude, this tool turns a plain-English description into working, tested code. Five specialized agents collaborate in a graph: one parses your intent, one plans the implementation, one writes the code, one reviews it for quality, and one runs real tests in an isolated Docker sandbox. If tests fail or the review score is too low, the coder revises automatically — up to a configurable number of iterations.
+
+## Demo
+
+![Multi-Agent Code Generator — pipeline complete with 79/79 tests passing](assets/demo.png)
+
+*The sidebar shows real-time agent status indicators. Here, a student grade tracker was generated, reviewed (9/10), and passed 79/79 tests on the first attempt.*
+
 ---
 
 ## Architecture
