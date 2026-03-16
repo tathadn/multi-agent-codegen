@@ -1,8 +1,17 @@
 FROM python:3.11-slim
 
-RUN pip install --no-cache-dir fastapi uvicorn pytest flask requests
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    flask \
+    requests \
+    httpx \
+    pydantic \
+    sqlalchemy \
+    pytest \
+    pytest-asyncio \
+    anyio[trio]
 
 WORKDIR /workspace
-COPY . .
 
-CMD ["pytest"]
+CMD ["pytest", "-v", "--tb=short"]
