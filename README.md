@@ -84,7 +84,7 @@ The app opens at `http://localhost:8501`.
 | **Planner** | claude-sonnet-4-6 | Outputs a structured `Plan`: objective, steps, files to create, dependencies, complexity |
 | **Coder** | claude-sonnet-4-6 | Generates `CodeArtifact` objects (filename, language, content). On revisions, receives prior review issues and test failures as context |
 | **Reviewer** | claude-sonnet-4-6 | Scores the code 0–10, marks it approved or not, lists issues and suggestions |
-| **Tester** | claude-haiku-4-5 | Writes and simulates test execution, returns pass/fail counts and error details |
+| **Tester** | user's choice | Generates pytest files and runs them in a Docker sandbox. The model is selected from the sidebar: **Haiku** (fast, best for simple scripts), **Sonnet** (default, reliable for most projects), or **Opus** (most thorough, best for complex logic and edge cases) |
 
 ### Revision Loop
 
@@ -177,8 +177,31 @@ def test_echo():
 | [Pydantic](https://docs.pydantic.dev/) | ≥ 2.0.0 | Typed state schema and structured LLM outputs |
 | [Streamlit](https://streamlit.io/) | ≥ 1.40.0 | Web UI with real-time streaming via `app.stream()` |
 | [python-dotenv](https://github.com/theskumar/python-dotenv) | ≥ 1.0.0 | `.env` file loading |
+| [LangSmith](https://smith.langchain.com/) | ≥ 0.1.0 | LLM tracing and observability (optional) |
 
 Python ≥ 3.10 required.
+
+---
+
+## Tracing with LangSmith
+
+Every LLM call across all five agents is automatically traced when LangSmith is enabled. You can inspect inputs, outputs, latency, and token usage for each agent run at [smith.langchain.com](https://smith.langchain.com).
+
+**To enable tracing:**
+
+1. Create a free account at [smith.langchain.com](https://smith.langchain.com)
+2. Generate an API key from your account settings
+3. Add the following to your `.env` file:
+
+```env
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_API_KEY=your_langsmith_api_key_here
+LANGCHAIN_PROJECT=multi-agent-codegen
+```
+
+4. Restart the app — traces will appear in your LangSmith project dashboard automatically.
+
+To disable tracing, set `LANGCHAIN_TRACING_V2=false` or remove the variable.
 
 ---
 
