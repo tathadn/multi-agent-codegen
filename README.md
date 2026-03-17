@@ -207,7 +207,6 @@ To disable tracing, set `LANGCHAIN_TRACING_V2=false` or remove the variable.
 
 ## Future Work
 
-- **Code execution sandbox** — actually run generated code in an isolated environment (e.g. Docker, E2B) instead of simulating test results with an LLM
 - **File system output** — write generated files directly to a user-specified directory with one click
 - **Agent memory** — persist previous runs so the coder can learn from past mistakes across sessions
 - **Custom agent prompts** — let users edit agent system prompts from the UI without touching code
