@@ -5,7 +5,9 @@ from pathlib import Path
 
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, SystemMessage
-from pydantic import BaseModel
+import json
+
+from pydantic import BaseModel, field_validator
 
 from models.schemas import AgentState, CodeArtifact
 
@@ -15,6 +17,13 @@ _PROMPT = (Path(__file__).parent.parent / "prompts" / "coder.md").read_text()
 
 class ArtifactList(BaseModel):
     artifacts: list[CodeArtifact]
+
+    @field_validator("artifacts", mode="before")
+    @classmethod
+    def coerce_artifacts(cls, v: object) -> object:
+        if isinstance(v, str):
+            return json.loads(v)
+        return v
 
 
 def get_llm() -> ChatAnthropic:
@@ -28,7 +37,6 @@ def _build_prompt(state: AgentState) -> str:
     parts = [f"User request: {state.user_request}"]
 
     if state.plan:
-        import json
         parts.append(f"\nImplementation plan:\n{json.dumps(state.plan.model_dump(), indent=2)}")
 
     if state.review and not state.review.approved:

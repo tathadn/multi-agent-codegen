@@ -31,7 +31,7 @@ class TestFileList(BaseModel):
 def get_llm() -> ChatAnthropic:
     return ChatAnthropic(
         model=os.getenv("TESTER_MODEL", "claude-sonnet-4-6"),
-        max_tokens=4096,
+        max_tokens=8096,
     )
 
 

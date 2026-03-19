@@ -185,12 +185,17 @@ Python ≥ 3.10 required.
 
 ## Tracing with LangSmith
 
-Every LLM call across all five agents is automatically traced when LangSmith is enabled. You can inspect inputs, outputs, latency, and token usage for each agent run at [smith.langchain.com](https://smith.langchain.com).
+Every LLM call across all five agents is automatically traced when LangSmith is enabled. Each pipeline run appears as a single trace in your project dashboard, with a child span per agent showing:
+
+- **Inputs / outputs** — the exact prompt and response for each agent
+- **Token usage** — prompt, completion, and total tokens per call
+- **Latency** — time spent in each agent and end-to-end pipeline duration
+- **Revision loops** — each coder → reviewer → tester iteration is captured as separate spans
 
 **To enable tracing:**
 
 1. Create a free account at [smith.langchain.com](https://smith.langchain.com)
-2. Generate an API key from your account settings
+2. Go to **Settings → API Keys** and generate a new key
 3. Add the following to your `.env` file:
 
 ```env
@@ -199,7 +204,7 @@ LANGCHAIN_API_KEY=your_langsmith_api_key_here
 LANGCHAIN_PROJECT=multi-agent-codegen
 ```
 
-4. Restart the app — traces will appear in your LangSmith project dashboard automatically.
+4. Run the app — traces appear in the `multi-agent-codegen` project automatically.
 
 To disable tracing, set `LANGCHAIN_TRACING_V2=false` or remove the variable.
 
