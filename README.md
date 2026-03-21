@@ -210,6 +210,12 @@ To disable tracing, set `LANGCHAIN_TRACING_V2=false` or remove the variable.
 
 ---
 
+## Tools Used
+
+- [Claude Code](https://claude.ai/code) — AI coding assistant used during development
+
+---
+
 ## Future Work
 
 - **File system output** — write generated files directly to a user-specified directory with one click
