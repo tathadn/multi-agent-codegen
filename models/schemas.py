@@ -60,5 +60,6 @@ class AgentState(BaseModel):
     status: TaskStatus = TaskStatus.PENDING
     iteration: int = 0
     max_iterations: int = 3
+    min_review_score: int = 7
     tester_model: Optional[str] = None
     error: Optional[str] = None

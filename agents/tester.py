@@ -5,13 +5,14 @@ import re
 from pathlib import Path
 
 from langchain_anthropic import ChatAnthropic
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage
 import json
 
 from pydantic import BaseModel, Field, field_validator
 
 from models.schemas import AgentState, CodeArtifact, TaskStatus, TestResult
 from sandbox.runner import CodeFile, run_in_sandbox
+from utils import BudgetCallbackHandler, cached_system, with_retries
 
 
 _PROMPT = (Path(__file__).parent.parent / "prompts" / "tester.md").read_text()
@@ -35,6 +36,7 @@ def get_llm(model: str | None = None) -> ChatAnthropic:
     return ChatAnthropic(
         model=model or os.getenv("TESTER_MODEL", DEFAULT_TESTER_MODEL),
         max_tokens=8096,
+        callbacks=[BudgetCallbackHandler()],
     )
 
 
@@ -62,11 +64,11 @@ def tester_node(state: AgentState) -> dict:
     llm = get_llm(state.tester_model).with_structured_output(TestFileList)
 
     messages = [
-        SystemMessage(content=_PROMPT),
+        cached_system(_PROMPT),
         HumanMessage(content=_format_artifacts(state)),
     ]
 
-    test_file_list: TestFileList = llm.invoke(messages)  # type: ignore[assignment]
+    test_file_list: TestFileList = with_retries(llm.invoke)(messages)  # type: ignore[assignment]
 
     if not test_file_list.artifacts:
         result = TestResult(

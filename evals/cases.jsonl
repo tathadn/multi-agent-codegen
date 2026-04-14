@@ -1,0 +1,10 @@
+{"id": "fizzbuzz", "prompt": "A Python function fizzbuzz(n) that returns a list where multiples of 3 are 'Fizz', multiples of 5 are 'Buzz', multiples of both are 'FizzBuzz', and other numbers are the number as a string. Include a main block that prints fizzbuzz(15)."}
+{"id": "fastapi_echo", "prompt": "A Python FastAPI server with a GET /health endpoint that returns {\"status\": \"ok\"} and a POST /echo endpoint that returns the JSON request body unchanged."}
+{"id": "csv_parser", "prompt": "A Python module csv_parser.py that reads a CSV file with a header row and returns a list of dicts mapping column names to row values. Handle quoted fields that contain commas."}
+{"id": "calculator", "prompt": "A Python Calculator class with add, subtract, multiply, and divide methods. Raise ValueError on divide by zero. Support chained calls by returning self."}
+{"id": "palindrome", "prompt": "A Python function is_palindrome(s) that returns True if the input string is a palindrome ignoring case and non-alphanumeric characters."}
+{"id": "word_count", "prompt": "A Python function word_count(text) that returns a dict mapping each lowercase word to its frequency. Strip punctuation and split on whitespace."}
+{"id": "rate_limiter", "prompt": "A Python TokenBucket class with capacity and refill_rate parameters. Method allow() returns True if a token is available (and consumes it) or False otherwise. Tokens refill over wall-clock time."}
+{"id": "json_flatten", "prompt": "A Python function flatten(obj, sep='.') that flattens a nested dict into a single-level dict with dot-joined keys. Example: {'a': {'b': 1}} becomes {'a.b': 1}."}
+{"id": "linked_list", "prompt": "A Python singly linked list class with append, prepend, remove(value), and __iter__ methods."}
+{"id": "binary_search", "prompt": "A Python function binary_search(sorted_list, target) that returns the index of target or -1 if not found. Must be iterative, not recursive."}

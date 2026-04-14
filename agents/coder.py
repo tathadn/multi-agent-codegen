@@ -4,12 +4,13 @@ import os
 from pathlib import Path
 
 from langchain_anthropic import ChatAnthropic
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage
 import json
 
 from pydantic import BaseModel, field_validator
 
 from models.schemas import AgentState, CodeArtifact
+from utils import BudgetCallbackHandler, cached_system, with_retries
 
 
 _PROMPT = (Path(__file__).parent.parent / "prompts" / "coder.md").read_text()
@@ -30,6 +31,7 @@ def get_llm() -> ChatAnthropic:
     return ChatAnthropic(
         model=os.getenv("CODER_MODEL", "claude-sonnet-4-6"),
         max_tokens=8096,
+        callbacks=[BudgetCallbackHandler()],
     )
 
 
@@ -64,11 +66,11 @@ def coder_node(state: AgentState) -> dict:
     llm = get_llm().with_structured_output(ArtifactList)
 
     messages = [
-        SystemMessage(content=_PROMPT),
+        cached_system(_PROMPT),
         HumanMessage(content=_build_prompt(state)),
     ]
 
-    result: ArtifactList = llm.invoke(messages)  # type: ignore[assignment]
+    result: ArtifactList = with_retries(llm.invoke)(messages)  # type: ignore[assignment]
 
     filenames = [a.filename for a in result.artifacts]
     summary = HumanMessage(

@@ -206,6 +206,33 @@ To disable tracing, set `LANGCHAIN_TRACING_V2=false` or remove the variable.
 
 ---
 
+## Running Experiments
+
+This repo ships a small eval harness with a hard budget cap so experiments (prompt-caching A/Bs, reviewer-score threshold sweeps, retry tuning) can't run away and cost real money.
+
+**Budget tracking.** Every `ChatAnthropic` call is wrapped with a `BudgetCallbackHandler` ([utils/budget.py](utils/budget.py)) that tallies input/output tokens, converts them to USD using a static pricing table, and raises `BudgetExceeded` the moment cumulative spend crosses the limit. The Streamlit app surfaces the running total after each generation; the eval harness halts mid-sweep if the cap is hit.
+
+```bash
+# .env
+EXPERIMENT_BUDGET_USD=25
+ENABLE_PROMPT_CACHE=true
+```
+
+**Eval harness.** `scripts/run_evals.py` runs every case in [evals/cases.jsonl](evals/cases.jsonl) through the graph headless and prints a table of pass rate, review score, revision count, latency, and cost.
+
+```bash
+python scripts/run_evals.py                    # run all 10 cases
+python scripts/run_evals.py --cases fizzbuzz   # subset by id
+python scripts/run_evals.py --budget 5         # override budget
+python scripts/run_evals.py --out results.json # dump full results
+```
+
+A case counts as passing only if the reviewer approved it **and** the review score meets `min_review_score` (default 7) **and** all sandbox tests passed — the same gating the live graph applies via `should_continue` in [agents/orchestrator.py](agents/orchestrator.py).
+
+**CI.** [.github/workflows/ci.yml](.github/workflows/ci.yml) runs `ruff` and `mypy` on every push. The eval job is **manual-only** (`workflow_dispatch` with `run_evals=true`) so PRs don't burn tokens — set the `ANTHROPIC_API_KEY` repo secret and pass a budget when dispatching.
+
+---
+
 ## Tools Used
 
 - [Claude Code](https://claude.ai/code) — AI coding assistant used during development

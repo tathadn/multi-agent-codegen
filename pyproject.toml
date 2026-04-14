@@ -15,6 +15,7 @@ dependencies = [
     "streamlit>=1.40.0",
     "python-dotenv>=1.0.0",
     "langsmith>=0.1.0",
+    "tenacity>=8.0.0",
 ]
 
 [project.optional-dependencies]
@@ -26,7 +27,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["agents", "models", "graph"]
+packages = ["agents", "models", "graph", "utils", "sandbox"]
 
 [tool.ruff]
 line-length = 100

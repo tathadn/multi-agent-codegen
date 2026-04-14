@@ -8,6 +8,7 @@ load_dotenv()
 
 from graph.workflow import build_graph
 from models.schemas import AgentState, TaskStatus
+from utils import BudgetExceeded, BudgetTracker, set_tracker
 
 
 st.set_page_config(
@@ -90,6 +91,11 @@ def run_with_streaming(
     indicator_states: dict,
 ) -> AgentState:
     """Run the graph with app.stream() and update sidebar indicators in real time."""
+    budget_limit = float(os.getenv("EXPERIMENT_BUDGET_USD", "25"))
+    tracker = BudgetTracker(limit_usd=budget_limit)
+    set_tracker(tracker)
+    st.session_state["budget_tracker"] = tracker
+
     graph = build_graph()
     recursion_limit = int(os.getenv("LANGGRAPH_RECURSION_LIMIT", "50"))
 
@@ -265,8 +271,18 @@ def main() -> None:
         try:
             state = run_with_streaming(request.strip(), max_iterations, tester_model, placeholders, indicator_states)
             render_results(state)
+        except BudgetExceeded as e:
+            st.error(f"Budget exceeded: {e}")
         except Exception as e:
             st.error(f"Pipeline error: {e}")
+
+        tracker = st.session_state.get("budget_tracker")
+        if tracker is not None:
+            st.caption(
+                f"💰 Spent ${tracker.spent_usd:.4f} / ${tracker.limit_usd:.2f} "
+                f"({tracker.calls} calls, "
+                f"{tracker.input_tokens:,} in / {tracker.output_tokens:,} out)"
+            )
 
 
 if __name__ == "__main__":

@@ -4,9 +4,10 @@ import os
 from pathlib import Path
 
 from langchain_anthropic import ChatAnthropic
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage
 
 from models.schemas import AgentState, ReviewFeedback, TaskStatus
+from utils import BudgetCallbackHandler, cached_system, with_retries
 
 
 _PROMPT = (Path(__file__).parent.parent / "prompts" / "reviewer.md").read_text()
@@ -16,6 +17,7 @@ def get_llm() -> ChatAnthropic:
     return ChatAnthropic(
         model=os.getenv("REVIEWER_MODEL", "claude-sonnet-4-6"),
         max_tokens=2048,
+        callbacks=[BudgetCallbackHandler()],
     )
 
 
@@ -31,11 +33,11 @@ def reviewer_node(state: AgentState) -> dict:
     llm = get_llm().with_structured_output(ReviewFeedback)
 
     messages = [
-        SystemMessage(content=_PROMPT),
+        cached_system(_PROMPT),
         HumanMessage(content=_format_artifacts(state)),
     ]
 
-    review: ReviewFeedback = llm.invoke(messages)  # type: ignore[assignment]
+    review: ReviewFeedback = with_retries(llm.invoke)(messages)  # type: ignore[assignment]
 
     status = TaskStatus.COMPLETED if review.approved else TaskStatus.NEEDS_REVISION
     summary = HumanMessage(
