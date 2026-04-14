@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import streamlit as st
 from dotenv import load_dotenv
@@ -89,14 +90,13 @@ def run_with_streaming(
     indicator_states: dict,
 ) -> AgentState:
     """Run the graph with app.stream() and update sidebar indicators in real time."""
-    os.environ["TESTER_MODEL"] = tester_model
-
     graph = build_graph()
     recursion_limit = int(os.getenv("LANGGRAPH_RECURSION_LIMIT", "50"))
 
     initial_state = AgentState(
         user_request=request,
         max_iterations=max_iterations,
+        tester_model=tester_model,
     )
 
     # Mark the first agent as running before stream starts
@@ -213,6 +213,29 @@ def render_results(state: AgentState) -> None:
 
     if state.artifacts:
         st.subheader(f"Generated Code ({len(state.artifacts)} file(s))")
+
+        with st.expander("📁 Export all files to a folder", expanded=False):
+            export_path = st.text_input(
+                "Destination directory",
+                value=str(Path.cwd() / "generated"),
+                key="export_path",
+                help="Absolute or relative path. The directory will be created if it doesn't exist.",
+            )
+            if st.button("Export", key="export_button"):
+                try:
+                    target = Path(export_path).expanduser().resolve()
+                    target.mkdir(parents=True, exist_ok=True)
+                    written: list[str] = []
+                    for artifact in state.artifacts:
+                        dest = target / artifact.filename
+                        dest.parent.mkdir(parents=True, exist_ok=True)
+                        dest.write_text(artifact.content)
+                        written.append(str(dest))
+                    st.success(f"Wrote {len(written)} file(s) to {target}")
+                    st.code("\n".join(written))
+                except Exception as exc:
+                    st.error(f"Export failed: {exc}")
+
         for artifact in state.artifacts:
             with st.expander(f"`{artifact.filename}` — {artifact.description}", expanded=True):
                 st.code(artifact.content, language=artifact.language)

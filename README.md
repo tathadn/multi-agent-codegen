@@ -2,6 +2,8 @@
 
 > Describe what you want to build — a pipeline of AI agents plans, writes, reviews, and tests the code for you.
 
+> *v1 foundation — see also [parallel-multi-agent-codegen](https://github.com/tathadn/parallel-multi-agent-codegen) and [self-evolving-codegen](https://github.com/tathadn/self-evolving-codegen) for the DAG and self-evolving follow-ups.*
+
 Built with [LangGraph](https://github.com/langchain-ai/langgraph) and Claude, this tool turns a plain-English description into working, tested code. Five specialized agents collaborate in a graph: one parses your intent, one plans the implementation, one writes the code, one reviews it for quality, and one runs real tests in an isolated Docker sandbox. If tests fail or the review score is too low, the coder revises automatically — up to a configurable number of iterations.
 
 ## Demo
@@ -52,11 +54,23 @@ Each agent shares a single `AgentState` object that flows through the [LangGraph
 
 ---
 
+## Related Projects
+
+This is the **v1 / foundation** in a three-part series on multi-agent code generation:
+
+| Repo | What it adds |
+|---|---|
+| **multi-agent-codegen** (this repo) | Sequential 5-agent pipeline with revision loop, Docker sandbox, LangSmith tracing |
+| [parallel-multi-agent-codegen](https://github.com/tathadn/parallel-multi-agent-codegen) | Orchestrator decomposes tasks into a dependency graph (DAG) and dispatches parallel coder workers for concurrent code generation |
+| [self-evolving-codegen](https://github.com/tathadn/self-evolving-codegen) | Adds a self-evolving tester that autonomously improves its test strategy over generations |
+
+---
+
 ## Quick Start
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/your-username/multi-agent-codegen.git
+git clone https://github.com/tathadn/multi-agent-codegen.git
 cd multi-agent-codegen
 
 # 2. Install dependencies
@@ -218,7 +232,8 @@ To disable tracing, set `LANGCHAIN_TRACING_V2=false` or remove the variable.
 
 ## Future Work
 
-- **File system output** — write generated files directly to a user-specified directory with one click
+*For parallel execution and self-evolving agents, see the follow-up repos linked in [Related Projects](#related-projects) above.*
+
 - **Agent memory** — persist previous runs so the coder can learn from past mistakes across sessions
 - **Custom agent prompts** — let users edit agent system prompts from the UI without touching code
 - **Streaming token output** — stream individual tokens from the coder agent for a faster perceived response

@@ -7,6 +7,9 @@ from pathlib import Path
 
 SANDBOX_IMAGE = "multi-agent-sandbox"
 TIMEOUT_SECONDS = 30
+SANDBOX_DIR = Path(__file__).parent
+
+_image_ready = False
 
 
 @dataclass
@@ -23,8 +26,37 @@ class SandboxResult:
     exit_code: int
 
 
+def _ensure_image() -> None:
+    """Build the sandbox Docker image on first use if it isn't already present."""
+    global _image_ready
+    if _image_ready:
+        return
+
+    inspect = subprocess.run(
+        ["docker", "image", "inspect", SANDBOX_IMAGE],
+        capture_output=True,
+        text=True,
+    )
+    if inspect.returncode == 0:
+        _image_ready = True
+        return
+
+    build = subprocess.run(
+        ["docker", "build", "-t", SANDBOX_IMAGE, str(SANDBOX_DIR)],
+        capture_output=True,
+        text=True,
+    )
+    if build.returncode != 0:
+        raise RuntimeError(
+            f"Failed to build sandbox image '{SANDBOX_IMAGE}':\n{build.stderr}"
+        )
+    _image_ready = True
+
+
 def run_in_sandbox(files: list[CodeFile]) -> SandboxResult:
     """Write files to a temp directory, run pytest inside the sandbox container, and return the result."""
+    _ensure_image()
+
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
 

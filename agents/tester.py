@@ -28,9 +28,12 @@ class TestFileList(BaseModel):
         return v
 
 
-def get_llm() -> ChatAnthropic:
+DEFAULT_TESTER_MODEL = "claude-sonnet-4-6"
+
+
+def get_llm(model: str | None = None) -> ChatAnthropic:
     return ChatAnthropic(
-        model=os.getenv("TESTER_MODEL", "claude-sonnet-4-6"),
+        model=model or os.getenv("TESTER_MODEL", DEFAULT_TESTER_MODEL),
         max_tokens=8096,
     )
 
@@ -56,7 +59,7 @@ def _parse_pytest_counts(stdout: str) -> tuple[int, int, int]:
 def tester_node(state: AgentState) -> dict:
     """Generates test files via LLM, then executes them in the sandbox for real results."""
     # Step 1: LLM generates test files
-    llm = get_llm().with_structured_output(TestFileList)
+    llm = get_llm(state.tester_model).with_structured_output(TestFileList)
 
     messages = [
         SystemMessage(content=_PROMPT),
