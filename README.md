@@ -16,38 +16,20 @@ Built with [LangGraph](https://github.com/langchain-ai/langgraph) and Claude, th
 
 ## Architecture
 
-```
-User Request
-     │
-     ▼
-┌─────────────┐
-│ Orchestrator│  Parses the request, tracks overall progress
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│   Planner   │  Produces a structured plan: steps, files, dependencies
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐ ◄─────────────────────────────┐
-│    Coder    │  Generates (or revises) code   │  revision loop
-└──────┬──────┘                                │  (up to N times)
-       │                                       │
-       ▼                                       │
-┌─────────────┐                                │
-│  Reviewer   │  Scores code quality (0–10),   │
-│             │  flags issues & suggestions    │
-└──────┬──────┘                                │
-       │                                       │
-       ▼                                       │
-┌─────────────┐  tests fail or review          │
-│   Tester    │  not approved? ────────────────┘
-└──────┬──────┘
-       │  all green
-       ▼
- Final Output
- (code files + plan + review + test report)
+```mermaid
+flowchart TD
+    U([User Request]) --> O[🎯 Orchestrator<br/>Parses request, tracks progress]
+    O --> P[📋 Planner<br/>Structured plan: steps, files, deps]
+    P --> C[💻 Coder<br/>Generates or revises code]
+    C --> R[🔍 Reviewer<br/>Scores 0–10, flags issues]
+    R --> T[🧪 Tester<br/>Generates pytest, runs in Docker sandbox]
+    T -->|all green| F([✅ Final Output<br/>code + plan + review + tests])
+    T -.->|tests fail or review rejected<br/>iteration &lt; max| C
+
+    classDef agent fill:#eef3fb,stroke:#4a6fa5,stroke-width:1px,color:#1a1a1a;
+    classDef endpoint fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px,color:#1a1a1a;
+    class O,P,C,R,T agent;
+    class U,F endpoint;
 ```
 
 Each agent shares a single `AgentState` object that flows through the [LangGraph](https://github.com/langchain-ai/langgraph) `StateGraph`. The tester node uses a conditional edge (`should_continue`) to either end the pipeline or loop back to the coder for revision.
