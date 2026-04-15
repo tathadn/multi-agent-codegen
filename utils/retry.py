@@ -6,7 +6,8 @@ returns malformed JSON under load. `BudgetExceeded` is deliberately NOT
 retried: it's a hard stop from the budget tracker."""
 from __future__ import annotations
 
-from typing import Any, Callable, TypeVar
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 from tenacity import (
     retry,

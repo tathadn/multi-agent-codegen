@@ -6,10 +6,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from graph.workflow import build_graph
-from models.schemas import AgentState, TaskStatus
-from utils import BudgetExceeded, BudgetTracker, set_tracker
-
+from graph.workflow import build_graph  # noqa: E402
+from models.schemas import AgentState, TaskStatus  # noqa: E402
+from utils import BudgetExceeded, BudgetTracker, set_tracker  # noqa: E402
 
 st.set_page_config(
     page_title="Multi-Agent Code Generator",
@@ -60,7 +59,10 @@ def render_sidebar() -> tuple[int, str, dict, dict]:
             options=list(TESTER_MODELS.keys()),
             index=1,
             label_visibility="collapsed",
-            help="Haiku is fastest but may miss edge cases. Opus is most thorough but slower and costlier.",
+            help=(
+                "Haiku is fastest but may miss edge cases. "
+                "Opus is most thorough but slower and costlier."
+            ),
         )
         tester_model = TESTER_MODELS[tester_choice]
 
@@ -208,7 +210,8 @@ def render_results(state: AgentState) -> None:
     with col2:
         if state.test_result:
             passed_icon = "✅" if state.test_result.passed else "❌"
-            label = f"🧪 Tests — {passed_icon} {state.test_result.passed_tests}/{state.test_result.total_tests}"
+            tr = state.test_result
+            label = f"🧪 Tests — {passed_icon} {tr.passed_tests}/{tr.total_tests}"
             with st.expander(label, expanded=False):
                 if state.test_result.errors:
                     st.markdown("**Failures:**")
@@ -225,7 +228,10 @@ def render_results(state: AgentState) -> None:
                 "Destination directory",
                 value=str(Path.cwd() / "generated"),
                 key="export_path",
-                help="Absolute or relative path. The directory will be created if it doesn't exist.",
+                help=(
+                    "Absolute or relative path. "
+                    "The directory will be created if it doesn't exist."
+                ),
             )
             if st.button("Export", key="export_button"):
                 try:
@@ -259,7 +265,10 @@ def main() -> None:
 
     request = st.text_area(
         "Describe what you want to build",
-        placeholder="e.g. A Python FastAPI server with a /health endpoint and a /echo POST endpoint",
+        placeholder=(
+            "e.g. A Python FastAPI server with a /health endpoint "
+            "and a /echo POST endpoint"
+        ),
         height=120,
     )
 
@@ -269,7 +278,13 @@ def main() -> None:
             return
 
         try:
-            state = run_with_streaming(request.strip(), max_iterations, tester_model, placeholders, indicator_states)
+            state = run_with_streaming(
+                request.strip(),
+                max_iterations,
+                tester_model,
+                placeholders,
+                indicator_states,
+            )
             render_results(state)
         except BudgetExceeded as e:
             st.error(f"Budget exceeded: {e}")

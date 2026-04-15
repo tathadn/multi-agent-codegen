@@ -9,7 +9,6 @@ from langchain_core.messages import HumanMessage
 from models.schemas import AgentState, TaskStatus
 from utils import BudgetCallbackHandler, cached_system, with_retries
 
-
 _PROMPT = (Path(__file__).parent.parent / "prompts" / "orchestrator.md").read_text()
 
 

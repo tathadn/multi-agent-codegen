@@ -54,7 +54,7 @@ def _ensure_image() -> None:
 
 
 def run_in_sandbox(files: list[CodeFile]) -> SandboxResult:
-    """Write files to a temp directory, run pytest inside the sandbox container, and return the result."""
+    """Write files to a temp dir, run pytest in the sandbox container, return the result."""
     _ensure_image()
 
     with tempfile.TemporaryDirectory() as tmpdir:

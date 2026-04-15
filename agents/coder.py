@@ -1,17 +1,15 @@
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage
-import json
-
 from pydantic import BaseModel, field_validator
 
 from models.schemas import AgentState, CodeArtifact
 from utils import BudgetCallbackHandler, cached_system, with_retries
-
 
 _PROMPT = (Path(__file__).parent.parent / "prompts" / "coder.md").read_text()
 
@@ -56,7 +54,10 @@ def _build_prompt(state: AgentState) -> str:
     if state.artifacts:
         parts.append("\nExisting code to revise:")
         for artifact in state.artifacts:
-            parts.append(f"\n### {artifact.filename}\n```{artifact.language}\n{artifact.content}\n```")
+            parts.append(
+                f"\n### {artifact.filename}\n"
+                f"```{artifact.language}\n{artifact.content}\n```"
+            )
 
     return "\n".join(parts)
 

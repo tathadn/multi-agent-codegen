@@ -11,7 +11,6 @@ from typing import Any
 
 from langchain_core.callbacks import BaseCallbackHandler
 
-
 # Public pricing in USD per 1M tokens (input, output).
 # Update when Anthropic changes list prices.
 PRICING: dict[str, tuple[float, float]] = {

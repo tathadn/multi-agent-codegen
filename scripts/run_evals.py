@@ -27,9 +27,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from graph.workflow import build_graph
-from models.schemas import AgentState, TaskStatus
-from utils import BudgetExceeded, BudgetTracker, set_tracker
+from graph.workflow import build_graph  # noqa: E402
+from models.schemas import AgentState, TaskStatus  # noqa: E402
+from utils import BudgetExceeded, BudgetTracker, set_tracker  # noqa: E402
 
 CASES_PATH = Path(__file__).resolve().parent.parent / "evals" / "cases.jsonl"
 
@@ -72,7 +72,11 @@ def run_case(graph: Any, case: dict[str, Any], max_iter: int) -> dict[str, Any]:
 
     elapsed = time.perf_counter() - start
 
-    state = AgentState(**{k: v for k, v in final_state.items() if v is not None}) if final_state else None
+    state = (
+        AgentState(**{k: v for k, v in final_state.items() if v is not None})
+        if final_state
+        else None
+    )
     review = state.review if state else None
     test = state.test_result if state else None
     status = state.status if state else TaskStatus.FAILED
@@ -103,7 +107,10 @@ def run_case(graph: Any, case: dict[str, Any], max_iter: int) -> dict[str, Any]:
 
 def print_table(results: list[dict[str, Any]], tracker: BudgetTracker) -> None:
     width_id = max(len(r["id"]) for r in results) if results else 4
-    header = f"{'id':<{width_id}}  {'pass':<5}  {'score':<5}  {'tests':<7}  {'iter':<4}  {'lat':<6}  status/error"
+    header = (
+        f"{'id':<{width_id}}  {'pass':<5}  {'score':<5}  {'tests':<7}  "
+        f"{'iter':<4}  {'lat':<6}  status/error"
+    )
     print(header)
     print("-" * len(header))
     for r in results:

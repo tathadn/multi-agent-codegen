@@ -1,19 +1,17 @@
 from __future__ import annotations
 
+import json
 import os
 import re
 from pathlib import Path
 
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage
-import json
-
 from pydantic import BaseModel, Field, field_validator
 
 from models.schemas import AgentState, CodeArtifact, TaskStatus, TestResult
 from sandbox.runner import CodeFile, run_in_sandbox
 from utils import BudgetCallbackHandler, cached_system, with_retries
-
 
 _PROMPT = (Path(__file__).parent.parent / "prompts" / "tester.md").read_text()
 
@@ -50,10 +48,10 @@ def _format_artifacts(state: AgentState) -> str:
 def _parse_pytest_counts(stdout: str) -> tuple[int, int, int]:
     """Extract total/passed/failed counts from pytest summary line."""
     # e.g. "3 passed, 1 failed" or "4 passed"
-    passed = len(re.findall(r"(\d+) passed", stdout))
-    failed = len(re.findall(r"(\d+) failed", stdout))
-    passed_count = int(re.search(r"(\d+) passed", stdout).group(1)) if re.search(r"(\d+) passed", stdout) else 0
-    failed_count = int(re.search(r"(\d+) failed", stdout).group(1)) if re.search(r"(\d+) failed", stdout) else 0
+    passed_match = re.search(r"(\d+) passed", stdout)
+    failed_match = re.search(r"(\d+) failed", stdout)
+    passed_count = int(passed_match.group(1)) if passed_match else 0
+    failed_count = int(failed_match.group(1)) if failed_match else 0
     total = passed_count + failed_count
     return total, passed_count, failed_count
 
@@ -84,7 +82,10 @@ def tester_node(state: AgentState) -> dict:
 
     # Step 2: Combine code files + test files and run in sandbox
     code_files = [CodeFile(filename=a.filename, content=a.content) for a in state.artifacts]
-    test_files = [CodeFile(filename=a.filename, content=a.content) for a in test_file_list.artifacts]
+    test_files = [
+        CodeFile(filename=a.filename, content=a.content)
+        for a in test_file_list.artifacts
+    ]
 
     sandbox_result = run_in_sandbox(code_files + test_files)
 
